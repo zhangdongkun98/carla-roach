@@ -5,6 +5,7 @@ import wandb
 import copy
 
 from carla_gym.utils.config_utils import load_entry_point
+from .models.ppo import PPO
 
 
 class RlBirdviewAgent():
@@ -103,7 +104,7 @@ class RlBirdviewAgent():
 
         # init ppo model
         model_class = load_entry_point(self._train_cfg['entry_point'])
-        model = model_class(self._policy, env, **self._train_cfg['kwargs'])
+        model: PPO = model_class(self._policy, env, **self._train_cfg['kwargs'])
         model.learn(total_timesteps, callback=callback, seed=seed)
 
     def render(self, reward_debug, terminal_debug):

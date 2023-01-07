@@ -229,6 +229,7 @@ class PPO():
         callback.on_training_start(locals(), globals())
 
         while self.num_timesteps < total_timesteps:
+            print(f'num_timesteps  {self.num_timesteps} / {total_timesteps}')
             callback.on_rollout_start()
             t0 = time.time()
             self.policy = self.policy.train()

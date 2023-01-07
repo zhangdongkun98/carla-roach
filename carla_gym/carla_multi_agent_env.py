@@ -107,6 +107,7 @@ class CarlaMultiAgentEnv(gym.Env):
         return obs_dict
 
     def step(self, control_dict):
+        # print('step: ', self._carla_map, control_dict)
         self._ev_handler.apply_control(control_dict)
         self._sa_handler.tick()
         # tick world

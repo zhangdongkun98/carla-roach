@@ -1,3 +1,10 @@
+import carla_utils as cu
+
+import os
+# os.environ["WANDB_API_KEY"] = 'd41ecb4ff129de18a60a1b2f31fc2459fe302878'
+# os.environ["WANDB_MODE"] = "offline"
+
+
 import gym
 from pathlib import Path
 import wandb
@@ -8,7 +15,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.callbacks import CallbackList
 
-from agents.rl_birdview.utils.wandb_callback import WandbCallback
+from agents_policy.rl_birdview.utils.wandb_callback import WandbCallback
+from agents_policy.rl_birdview.rl_birdview_agent import RlBirdviewAgent
 from carla_gym.utils import config_utils
 from utils import server_utils
 
@@ -29,15 +37,15 @@ def main(cfg: DictConfig):
     agent_name = cfg.actors[cfg.ev_id].agent
 
     last_checkpoint_path = Path(hydra.utils.get_original_cwd()) / 'outputs' / 'checkpoint.txt'
-    if last_checkpoint_path.exists():
-        with open(last_checkpoint_path, 'r') as f:
-            cfg.agent[agent_name].wb_run_path = f.read()
+    # if last_checkpoint_path.exists():
+    #     with open(last_checkpoint_path, 'r') as f:
+    #         cfg.agent[agent_name].wb_run_path = f.read()
 
     OmegaConf.save(config=cfg.agent[agent_name], f='config_agent.yaml')
 
     # single agent
     AgentClass = config_utils.load_entry_point(cfg.agent[agent_name].entry_point)
-    agent = AgentClass('config_agent.yaml')
+    agent: RlBirdviewAgent = AgentClass('config_agent.yaml')
     cfg_agent = OmegaConf.load('config_agent.yaml')
 
     obs_configs = {cfg.ev_id: OmegaConf.to_container(cfg_agent.obs_configs)}
@@ -55,6 +63,7 @@ def main(cfg: DictConfig):
         env = gym.make(config['env_id'], obs_configs=obs_configs, reward_configs=reward_configs,
                        terminal_configs=terminal_configs, host='localhost', port=config['port'],
                        seed=cfg.seed, no_rendering=True, **config['env_configs'])
+        print(env, config['env_id'])
         env = EnvWrapper(env, **wrapper_kargs)
         return env
 
